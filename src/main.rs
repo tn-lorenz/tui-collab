@@ -46,9 +46,12 @@ fn render(frame: &mut Frame, textarea: &TextArea) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Min(5), Constraint::Length(3)].as_ref())
-        .split(frame.size());
+        .split(frame.area());
 
-    let font = FIGfont::from_file("fonts/The Edge.flf").unwrap();
+    let font_path_buf = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("fonts/The Edge.flf");
+    let font_path = font_path_buf.to_str().unwrap();
+    let font = FIGfont::from_file(font_path).unwrap();
+
     let ascii_art = font.convert("TUI-COLLAB").unwrap();
 
     let block = Block::default().title(TITLE).borders(Borders::ALL);
@@ -57,5 +60,5 @@ fn render(frame: &mut Frame, textarea: &TextArea) {
         .alignment(Alignment::Center);
 
     frame.render_widget(paragraph, chunks[0]);
-    frame.render_widget(textarea.widget(), chunks[1]);
+    frame.render_widget(textarea, chunks[1]);
 }
