@@ -1,54 +1,61 @@
 pub mod map;
 
 use figlet_rs::FIGfont;
-use ratatui::crossterm::event;
 use ratatui::crossterm::event::{Event, KeyCode};
+use ratatui::layout::{Alignment, Constraint, Direction, Layout};
+use ratatui::style::Style;
+use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::{DefaultTerminal, Frame};
-use ratatui::layout::Alignment;
-use ratatui::widgets::{Block, Borders, Paragraph, Widget};
+use tui_textarea::TextArea;
 
-// This should later be dynamically changed from "tui-maps :O)" to whatever project the user is currently working on
-const TITLE: &str = "PROJECT-NAME";
+const TITLE: &str = "collab :O)";
 
 fn main() -> Result<(), std::io::Error> {
     color_eyre::install().unwrap();
-    
-    let terminal = ratatui::init();
-    let result = run(terminal);
-    
+
+    let mut terminal = ratatui::init();
+    let mut textarea = TextArea::default();
+    textarea.set_cursor_line_style(Style::default());
+
+    let result = run(&mut terminal, &mut textarea);
+
     ratatui::restore();
 
-    println!("Exited tui-maps. Smell 'ya later :O) !");
+    println!("Exited tui-maps. Lines typed: {:?}", textarea.lines());
     result
 }
 
-fn run(mut terminal: DefaultTerminal) -> Result<(), std::io::Error> {
+fn run(terminal: &mut DefaultTerminal, textarea: &mut TextArea) -> Result<(), std::io::Error> {
     loop {
-        terminal.draw(render)?;
-        if let Event::Key(key) = event::read()? {
+        terminal.draw(|f| render(f, textarea))?;
+
+        if let Event::Key(key) = ratatui::crossterm::event::read()? {
             match key.code {
-                KeyCode::Esc => {
-                    break ;
+                KeyCode::Esc => break,
+                _ => {
+                    textarea.input(key);
                 }
-                _ => {}
             }
         }
     }
-    
+
     Ok(())
 }
 
-fn render(frame: &mut Frame) {
-    //Paragraph::new("Ayo").render(frame.area(), frame.buffer_mut());
-    //let font = FIGfont::standard().unwrap();
+fn render(frame: &mut Frame, textarea: &TextArea) {
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(5), Constraint::Length(3)].as_ref())
+        .split(frame.size());
+
     let font = FIGfont::from_file("fonts/The Edge.flf").unwrap();
-    let ascii_art = font.convert("TUI-MAPS").unwrap();
+    let ascii_art = font.convert("TUI-COLLAB").unwrap();
 
-    let block = Block::default()
-        .title(TITLE)
-        .borders(Borders::ALL);
-
-    Paragraph::new(ascii_art.to_string())
+    let block = Block::default().title(TITLE).borders(Borders::ALL);
+    let paragraph = Paragraph::new(ascii_art.to_string())
         .block(block)
-        .alignment(Alignment::Center).render(frame.area(), frame.buffer_mut());
+        .alignment(Alignment::Center);
+
+    frame.render_widget(paragraph, chunks[0]);
+    frame.render_widget(textarea.widget(), chunks[1]);
 }

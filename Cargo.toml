@@ -1,5 +1,5 @@
 [package]
-name = "tui-maps"
+name = "tui-collab"
 version = "0.1.0"
 edition = "2024"
 
@@ -9,3 +9,4 @@ color-eyre = "0.6"
 figlet-rs = "0.1.5"
 uuid = { version = "1.18.1", features = ["v4"] }
 chrono = "0.4.41"
+tui-textarea = "0.7.0"

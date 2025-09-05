@@ -1,5 +1,6 @@
-use std::fmt;
 use chrono::{DateTime, Utc};
+use std::fmt;
+use std::fmt::Display;
 use uuid::Uuid;
 
 pub struct User {
@@ -40,9 +41,19 @@ pub struct Progress {
     total: u32,
 }
 
-impl fmt::Display for Progress {
+impl Progress {
+    pub fn completed(&self) -> bool {
+        self.fulfilled >= self.total
+    }
+}
+
+impl Display for Progress {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}/{} done]", self.fulfilled, self.total)
+        if self.completed() {
+            write!(f, "[{}/{} done] ✔️", self.total, self.total)
+        } else {
+            write!(f, "[{}/{} done] ❌", self.fulfilled, self.total)
+        }
     }
 }
 
@@ -50,6 +61,7 @@ pub enum Status {
     Uncertain,
     Planned,
     UnderConstruction,
+    WorkedOn,
     Fulfilled,
 }
 
@@ -57,6 +69,7 @@ pub enum Tag {
     NeedsWork,
     Placeholder,
     Suggestion,
+    SubjectToChange,
 }
 
 pub enum Priority {
